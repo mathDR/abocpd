@@ -45,7 +45,13 @@ Matlab-function minimize.m
 
 from numpy import dot, isinf, isnan, any, sqrt, isreal, real, nan, inf
 
-def rt_minimize(X,f,length=-100,*args):
+
+def rt_minimize(
+    X,
+    f,
+    length=-100,
+    *args
+):
     red = 1.0
     verbose = False
     # don't reevaluate within 0.1 of the limit of the current bracket
@@ -88,10 +94,10 @@ def rt_minimize(X,f,length=-100,*args):
         else:
             M = min(MAX, -length - i)
         while 1:  # keep extrapolating as long as necessary
-            x2  = 0
-            f2  = f0
-            d2  = d0
-            f3  = f0
+            x2 = 0
+            f2 = f0
+            d2 = d0
+            f3 = f0
             df3 = df0
             success = 0
             while not success and M > 0:
@@ -106,7 +112,10 @@ def rt_minimize(X,f,length=-100,*args):
                         return
                     success = 1
                 except:
-                    # catch any error which occured in f
+
+                                            # catch any error which occured in
+                                            # f
+
                     x3 = (x2 + x3) / 2  # bisect and try again
             if f3 < F0:
                 X0 = X + x3 * s  # keep best values
@@ -114,7 +123,10 @@ def rt_minimize(X,f,length=-100,*args):
                 dF0 = df3
             d3 = dot(df3, s)  # new slope
             if d3 > SIG * d0 or f3 > f0 + x3 * RHO * d0 or M == 0:
-            # are we done extrapolating?
+
+                                                    # are we done
+                                                    # extrapolating?
+
                 break
             x1 = x2  # move point 2 to point 1
             f1 = f2
@@ -131,19 +143,32 @@ def rt_minimize(X,f,length=-100,*args):
             else:
                 x3 = inf
             if not isreal(x3) or isnan(x3) or isinf(x3) or x3 < 0:
-            # num prob | wrong sign?
+
+                                                        # num prob | wrong
+                                                        # sign?
+
                 x3 = x2 * EXT  # extrapolate maximum amount
             elif x3 > x2 * EXT:
-            # new point beyond extrapolation limit?
+
+                                         # new point beyond extrapolation
+                                         # limit?
+
                 x3 = x2 * EXT  # extrapolate maximum amount
             elif x3 < x2 + INT * (x2 - x1):
-            # new point too close to previous point?
+
+                                        # new point too close to previous
+                                        # point?
+
                 x3 = x2 + INT * (x2 - x1)
             x3 = real(x3)
 
-        while (abs(d3) > -SIG*d0 or f3 > f0 + x3*RHO*d0) and M>0:
-            # keep interpolating
-            if d3 > 0 or f3 > f0 + x3*RHO*d0:  # choose subinterval
+        while (abs(d3) > -SIG * d0 or f3 > f0 + x3 * RHO * d0) and M \
+            > 0:
+
+                                                            # keep
+                                                            # interpolating
+
+            if d3 > 0 or f3 > f0 + x3 * RHO * d0:  # choose subinterval
                 x4 = x3  # move point 3 to point 4
                 f4 = f3
                 d4 = d3
@@ -152,57 +177,69 @@ def rt_minimize(X,f,length=-100,*args):
                 f2 = f3
                 d2 = d3
             if f4 > f0:
-                x3 = x2 - 0.5*d2*(x4 - x2)**2 / (f4 - f2 - d2*(x4 - x2))
+                x3 = x2 - 0.5 * d2 * (x4 - x2) ** 2 / (f4 - f2 - d2
+                                                       * (x4 - x2))
             else:
+
+                                                       # quadratic
+                                                       # interpolation
+
                 # cubic interpolation
                 A = 6 * (f2 - f4) / (x4 - x2) + 3 * (d4 + d2)
                 B = 3 * (f4 - f2) - (2 * d2 + d4) * (x4 - x2)
                 if A != 0:
-                    x3 = x2 + (sqrt(B*B - A*d2*(x4 - x2)**2) - B) / A
+                    x3 = x2 + (sqrt(B * B - A * d2 * (x4 - x2) ** 2)
+                               - B) / A
                 else:
-                # num. error possible, ok!
+
+                                                      # num. error possible,
+                                                      # ok!
+
                     x3 = inf
             if isnan(x3) or isinf(x3):
                 x3 = (x2 + x4) / 2  # if we had a numerical problem then bisect
-            x3 = max(min(x3, x4 - INT*(x4 - x2)), x2 + INT*(x4 - x2))
-            # don't accept too close
+            x3 = max(min(x3, x4 - INT * (x4 - x2)), x2 + INT * (x4
+                     - x2))
 
-            result3 = f(X + x3*s, *args)
-            f3  = result3[0]
+                                                        # don't accept too
+                                                        # close
+
+            result3 = f(X + x3 * s, *args)
+            f3 = result3[0]
             df3 = result3[1]
             if f3 < F0:
-                X0  = X + x3*s  # keep best values
-                F0  = f3
+                X0 = X + x3 * s  # keep best values
+                F0 = f3
                 dF0 = df3
             M = M - 1  # count epochs?!
             i = i + (length < 0)
             d3 = dot(df3, s)  # new slope
 
         # if line search succeeded
-        if abs(d3) < -SIG*d0 and f3 < f0 + x3*RHO*d0:
-            X = X + x3*s  # update variables
+        if abs(d3) < -SIG * d0 and f3 < f0 + x3 * RHO * d0:
+            X = X + x3 * s  # update variables
             f0 = f3
             fX.append(f0)
-            s = (dot(df3, df3) - dot(df0, df3)) / dot(df0, df0)*s - df3
+            s = (dot(df3, df3) - dot(df0, df3)) / dot(df0, df0) * s - df3
             # Polack-Ribiere CG direction
 
             df0 = df3  # swap derivatives
-            d3  = d0
-            d0  = dot(df0, s)
+            d3 = d0
+            d0 = dot(df0, s)
             if d0 > 0:  # new slope must be negative
-                s  = -df0  # otherwise use steepest direction
+                s = -df0  # otherwise use steepest direction
                 d0 = -dot(s, s)
             # slope ratio but max RATIO
             x3 = x3 * min(RATIO, d3 / (d0 - SMALL))
             ls_failed = 0  # this line search did not fail
         else:
-            X   = X0  # restore best point so far
-            f0  = F0
+            X = X0  # restore best point so far
+            f0 = F0
             df0 = dF0
             # line search failed twice in a row
             if ls_failed or i > abs(length):
                 break  # or we ran out of time, so we give up
-            s  = -df0  # try steepest
+            s = -df0  # try steepest
             d0 = -dot(s, s)
             x3 = 1 / (1 - d0)
             ls_failed = 1  # this line search failed
@@ -213,5 +250,18 @@ def rt_minimize(X,f,length=-100,*args):
     return (X, fX, i)
 
 
+if __name__ == '__main__':
+    import numpy as np
 
+    def func(x, theta1, theta2):
+        f = ((x - theta1 - theta2) ** 2).sum()
+        df = 2 * (x - theta1 - theta2)
+        return (f, df)
 
+    X = np.random.normal(0, 1.0, (3, ))
+    x0 = X[:]
+    theta1 = np.asarray([2.3, 1.1, -4.4])
+    theta2 = np.asarray([1., 2., 3.])
+
+    (x, fx, i) = rt_minimize(X, func, -100, theta1, theta2)
+    print x0, x, theta1 + theta2, fx[-1], i

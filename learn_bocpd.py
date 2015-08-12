@@ -1,41 +1,22 @@
 import numpy as np
-from scipy.special import logit
 
-from Hazards import logistic
-from Hazards import constant_h
-from Hazards import logistic_h
-from UPM import gaussian1D
 from rt_minimize import rt_minimize
+from Hazards import logistic
 
-def learn_bocpd(X, useLogistic=False):
+def learn_bocpd(X, model_f, hazard_f, conversion):
   max_minimize_iter = 30
 
-  if useLogistic:
-    model_f = gaussian1D()
-    hazard_f = logistic_h
-    num_hazard_params = 3
+  theta = hazard_f.hazard_params
+  theta.extend(model_f.post_params)
 
-    hazard_init = [logit(.01), 0, 0]
-    model_init = [0, np.log(.1), np.log(.1), np.log(.1)]
-    conversion = [2, 0, 0, 0, 1, 1, 1]
-  else:
-    model_f = 'gaussian1D'
-    hazard_f = constant_h
-    num_hazard_params = 1
+  theta, nlml, _ = rt_minimize(theta, bocpd_dwrap1D, -max_minimize_iter, X, model_f, hazard_f, conversion, hazard_f.num_hazard_params)
+  print "we make it to here!"
 
-    hazard_init = [logit(.01)]
-    model_init = [0, np.log(.1), np.log(.1), np.log(.1)]
-    conversion = [2, 0, 1, 1, 1]
+  hazard_f.hazard_params = theta[0:num_hazard_params]
+  model_f.model_params   = theta[num_hazard_params:]
 
-  theta = hazard_init.extend(model_init)
-
-  theta, nlml = rt_minimize(theta, bocpd_dwrap1D, -max_minimize_iter, X, model_f, hazard_f, conversion, num_hazard_params)
-
-  hazard_params = theta[0:num_hazard_params]
-  model_params  = theta[num_hazard_params:]
-
-  hazard_params[0] = logistic(hazard_params[0])
-  model_params[1:] = np.exp(model_params[1:])
+  hazard_f.hazard_params[0] = logistic(hazard_f.hazard_params[0])
+  model_f.model_params[1:]  = np.exp(model_f.model_params[1:])
   return hazard_params, model_params, nlml
 
 def bocpd_dwrap1D(theta, X, model_f, hazard_f, conversion, num_hazard_params):

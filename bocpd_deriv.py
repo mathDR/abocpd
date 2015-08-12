@@ -17,7 +17,8 @@ def bocpd_deriv(theta_h, theta_m, X, hazard_f, model_f):
 
   # At time t = 1, we actually have complete knowledge about the run
   # length.  It is definitely zero.  See the paper for other possible
-  # boundary conditions. This assumes there was surely a change point right before the first data point not at the first data point.
+  # boundary conditions. This assumes there was surely a change point right
+  # before the first data point not at the first data point.
   # Implements step 1, alg 1, of [RPA].
   # => P(runglenth_0 = 0|nothing) = 1
   R[0,0] = 1 # 1 x 1. [P]
@@ -27,7 +28,7 @@ def bocpd_deriv(theta_h, theta_m, X, hazard_f, model_f):
   dZ_h = np.zeros((T, num_hazard_params))
   dZ_m = np.zeros((T, num_model_params))
   # Find parameters of p(X_1|nothing). 1 x param_count. units depend on model_f
-  post_params, dmessage = model_f.init_f(T + 1, D, theta_m)
+  model_f.init_f(T + 1, D, theta_m)
   for t in range(T):
     # Implictly Implements step 2, alg 1, of [RPA]: oberserve new datum, simply by
     # incrementing the loop index.
@@ -36,12 +37,12 @@ def bocpd_deriv(theta_h, theta_m, X, hazard_f, model_f):
     # the parameters.  This is the standard thing from Bayesian inference.
     # Implements step 3, alg 1, of [RPA].
     # predprobs(r) = p(X(t)|X(1:t-1), runlength_t-1 = r-1). t x 1. [P]
-    predprobs, dpredprobs = model_f.predict(post_params, X[t,:], dmessage)
+    predprobs, dpredprobs = model_f.predict(model_f.post_params, X[t,:], model_f.dmessage)
 
     # Evaluate the hazard function for this interval.
     # H(r) = P(runlength_t = 0|runlength_t-1 = r-1)
     # Pre-computed the hazard in preperation for steps 4 & 5, alg 1, of [RPA]
-    H, dH = hazard_f(range(t), theta_h) # t x 1. [P]
+    H, dH = hazard_f.evaluate(range(t)) # t x 1. [P]
 
     # Evaluate the growth probabilities - shift the probabilities up and to
     # the right, scaled by the hazard function and the predictive
@@ -50,11 +51,11 @@ def bocpd_deriv(theta_h, theta_m, X, hazard_f, model_f):
     # Assigning P(runlength_t = 1|X_1:t) to P(runlength_t = t|X_1:t):
     # P(runlength_t = r|X_1:t) propto P(runlength_t-1 = r-1|X_1:t-1) *
     # p(X_t|X_1:t-1,runlength_t-1 = r-1) * P(runlength_t = r|runlength_t-1 = r-1).
-    R[1:t + 1, t + 1] = R[:t, t] * predprobs * (1 - H) # t x 1. [P]
-    for ii in range(num_hazard_params):
+    R[1:t + 1, t + 1] = R[:t, t]*predprobs*(1 - H) # t x 1. [P]
+    for ii in range(hazard_f.num_hazard_params):
       dR_h[1:t + 1, t + 1, ii] = predprobs*(dR_h[:t, t, ii]*(1 - H)-R[:t, t]*dH[:,ii])
 
-    for ii = 1:num_model_params
+    for ii in range(num_model_params):
       dR_m[1:t + 1, t + 1, ii] = (1 - H)*(dR_m[:t,t,ii]*predprobs+ R[:t,t]* dpredprobs[:,ii])
 
     # Evaluate the probability that there *was* a changepoint and we're
@@ -64,9 +65,9 @@ def bocpd_deriv(theta_h, theta_m, X, hazard_f, model_f):
     # P(runlength_t = 0|X_1:t) propto sum_r=0^t-1 P(runlength_t-1 = r|X_1:t-1) *
     # p(X_t|X_1:t-1, runlength_t-1 = r) * P(runlength_t = 0|runlength_t-1 = r).
     R[0, t + 1] = np.sum(R[:t, t] * predprobs * H) # 1 x 1. [P]
-    for ii in range(num_hazard_params):
-      dR_h[0, t + 1, ii] = np.sum(predprobs * (dR_h[:t, t, ii] * H + R[:t, t) * dH[:, ii]))
-    for ii in range(num_model_params):
+    for ii in range(hazard_f.num_hazard_params):
+      dR_h[0, t + 1, ii] = np.sum(predprobs * (dR_h[:t, t, ii] * H + R[:t,t] * dH[:, ii]))
+    for ii in range(model_f.num_model_params):
       dR_m[0, t + 1, ii] = np.sum(H * (dR_m[:t, t, ii] * predprobs + R[:t,t] * dpredprobs[:, ii]))
 
 

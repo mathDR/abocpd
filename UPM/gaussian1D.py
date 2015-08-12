@@ -9,7 +9,7 @@ class gaussian1D():
         self.dpred        = []
         self.dmessage     = []
 
-    def init_f(self,T,theta_m):
+    def init_f(self,T,D,theta_m):
         self.post_params = theta_m
         self.dmessage = np.eye(4)
 

@@ -2,11 +2,16 @@
 # Evaluate the BOCPS learning procedure on the well data and compare to RPA hand
 # picked hyper-parameters.
 import numpy as np
+from scipy.special import logit
 import matplotlib.pyplot as plt
 from time import clock
 import random
 
 from learn_bocpd import learn_bocpd
+from Hazards import logistic
+from Hazards import constant_h
+from Hazards import logistic_h
+from UPM import gaussian1D
 
 if __name__ == '__main__':
   print 'Trying well log data'
@@ -14,7 +19,7 @@ if __name__ == '__main__':
   # I think all this code is deterministic, but let's fix the seed to be safe.
   random.seed(4)
 
-  well = np.genfromtxt('well.dat')
+  well = np.genfromtxt('Data/well.dat')
 
   # We don't know the physical interpretation, so lets just standardize the
   # readings to make them cleaner.
@@ -23,6 +28,18 @@ if __name__ == '__main__':
   Ttest  = X.shape[0] - Tlearn
 
   useLogistic = True
+
+
+  model_init = np.asarray([0, np.log(.1), np.log(.1), np.log(.1)])
+  model_f = gaussian1D()
+  model_f.init_f(1,1,model_init)
+  if useLogistic:
+    hazard_init = [logit(.01), 0, 0]
+    hazard_f = logistic_h(hazard_init)
+    conversion = [2, 0, 0, 0, 1, 1, 1]
+  else:
+    hazard_f = constant_h(logit(.01))
+    conversion = [2, 0, 1, 1, 1]
   print X.shape, well.shape, Tlearn, Ttest, useLogistic
   #assert(isVector(X))
   #assert(X, 2) == 1)
@@ -32,7 +49,7 @@ if __name__ == '__main__':
   # Can try learn_IFM usinf IFMfast to speed this up
   print 'Starting learning'
   start_time = clock()
-  well_hazard, well_model, well_learning = learn_bocpd(X[:Tlearn], useLogistic)
+  well_hazard, well_model, well_learning = learn_bocpd(X[:Tlearn], model_f,hazard_f, conversion)
   print clock() - start_time
   print 'Learning Done'
 
