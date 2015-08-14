@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from time import clock
 import random
 
-from learn_bocpd import learn_bocpd
+from learn_bocpd import learn_bocpd, bocpd_dwrap1D
 from Hazards import logistic
 from Hazards import constant_h
 from Hazards import logistic_h
@@ -24,6 +24,7 @@ if __name__ == '__main__':
   # We don't know the physical interpretation, so lets just standardize the
   # readings to make them cleaner.
   X = (well - np.mean(well,axis=0))/(1e-16 + np.std(well,axis=0))
+  X = np.atleast_2d(X).T
   Tlearn = 2000
   Ttest  = X.shape[0] - Tlearn
 
@@ -49,7 +50,10 @@ if __name__ == '__main__':
   # Can try learn_IFM usinf IFMfast to speed this up
   print 'Starting learning'
   start_time = clock()
-  well_hazard, well_model, well_learning = learn_bocpd(X[:Tlearn], model_f,hazard_f, conversion)
+  theta = hazard_f.hazard_params
+  theta.extend(model_f.post_params)
+  bocpd_dwrap1D(theta, X, model_f, hazard_f, conversion)
+  #well_hazard, well_model, well_learning = learn_bocpd(X[:Tlearn], model_f,hazard_f, conversion)
   print clock() - start_time
   print 'Learning Done'
 

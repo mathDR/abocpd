@@ -19,7 +19,7 @@ def learn_bocpd(X, model_f, hazard_f, conversion):
   model_f.model_params[1:]  = np.exp(model_f.model_params[1:])
   return hazard_params, model_params, nlml
 
-def bocpd_dwrap1D(theta, X, model_f, hazard_f, conversion, num_hazard_params):
+def bocpd_dwrap1D(theta, X, model_f, hazard_f, conversion):
   from bocpd_deriv import bocpd_deriv
   # Warning: this code assumes: theta_h are in logit scale, theta_m(1) is in
   # linear, and theta_m(2:end) are in log scale!
@@ -28,8 +28,8 @@ def bocpd_dwrap1D(theta, X, model_f, hazard_f, conversion, num_hazard_params):
   theta[conversion == 1] = np.exp(theta[conversion == 1])
 
   # Seperate theta into hazard and model hypers
-  theta_h = theta[:num_hazard_params]
-  theta_m = theta[num_hazard_params:]
+  theta_h = theta[:hazard_f.num_hazard_params]
+  theta_m = theta[hazard_f.num_hazard_params:]
 
   nlml, dnlml_h, dnlml_m = bocpd_deriv(theta_h, theta_m, X, hazard_f, model_f)
 
