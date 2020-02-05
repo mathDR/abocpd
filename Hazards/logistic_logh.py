@@ -12,7 +12,7 @@ class logistic_logh():
 
     def logsumexp(self,x, c):
         # function logZ = logsumexp(x, c)
-        maxx = np.max(x, c)
+        maxx = np.max([np.max(x),np.max(c)])
         if isinstance(maxx, np.ndarray):
             maxx[np.isnan(maxx)] = 0
             maxx[np.logical_not(np.isfinite(maxx))] = 0

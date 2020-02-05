@@ -1,10 +1,10 @@
-from numpy import asarray, allclose
+from numpy import asarray, allclose, arange
 
 def test_logistic():
     from ..logistic import logistic
     x = asarray([1, 23, 3])
     assert allclose(logistic(x), asarray([0.73105858, 1., 0.95257413]))
-    print 'logistic Test PASSED'
+    print('logistic Test PASSED')
 
 def test_constant_h():
     from ..constant_h import constant_h
@@ -19,7 +19,7 @@ def test_constant_h():
                     0.10000000000000001, 0.10000000000000001,
                     0.10000000000000001, 0.10000000000000001]))
     assert allclose(dH, asarray([1, 1, 1, 1, 1]))
-    print 'constant_h Test PASSED'
+    print('constant_h Test PASSED')
 
 
 def test_logistic_h():
@@ -45,12 +45,12 @@ def test_logistic_h2():
     assert allclose(b, asarray([[0.20186592, 0.03616261, 0.0809621],
                     [0.20192627, 0.03625446, 0.08088343], [0.19960301,
                     0.03261248, 0.08386753]]))
-    print 'logistic_h2 Test PASSED'
+    print('logistic_h2 Test PASSED')
 
 
 def test_logistic_logh():
     from ..logistic_logh import logistic_logh
-    v = asarray(range(1, 4))
+    v = arange(1, 4)
     theta_h = asarray([1.5, 2.5, .5])
     hazard = logistic_logh(theta_h)
     assert hazard.num_hazard_params == 3
@@ -67,7 +67,7 @@ def test_logistic_logh():
                     -0.16697709], [-0.79966016, -0.0356828,
                     -0.0178414], [-0.8160738, -0.00450053,
                     -0.00150018]]))
-    print 'logistic_logh Test PASSED'
+    print('logistic_logh Test PASSED')
 
 
 def test_logistic_logg():
@@ -92,7 +92,7 @@ def test_logistic_logg():
                     -0.18481849], [-2.25801804, -0.20716042,
                     -0.18631867], [-3.07546913, -0.20765398,
                     -0.18644206]]))
-    print 'logistic_logg Test PASSED'
+    print('logistic_logg Test PASSED')
 
 
 
