@@ -18,10 +18,10 @@ def studentpdf(x,mu,var,nu,nargout=1):
     p = c * (1.0 + (1.0 / (nu * var)) * (x - mu) ** 2) ** (-0.5 * (nu + 1))
 
     if nargout == 2:
-        if isinstance(mu, (int, long, float, complex)):
-            N = 1
+        if hasattr(mu, '__len__') and (not isinstance(mu, str)):
+          N = len(mu)
         else:
-            N = len(mu)
+            N = 1
         dp = np.zeros((N, 3))
 
         error = (x - mu) / np.sqrt(var)

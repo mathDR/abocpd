@@ -36,7 +36,7 @@ class gaussian1D():
         alphas_new = [self.theta[2], alphas + 0.5] # N + 1 x 1. [points]
         # N + 1 x 1. [x^2]
         betas_new  = [self.theta[3], betas + (kappas*(xt - mus)**2)/(2.0*(kappas+1))]
-        print "I AM HERE!!!!"
+
         self.post_params = [mus_new, kappas_new, alphas_new, betas_new] # N + 1 x 4. [mixed]
 
         if needDerivatives:

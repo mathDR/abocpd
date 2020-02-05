@@ -19,4 +19,7 @@ def test_studentpdf():
                         [-2.38903047e-01,  -4.08902709e-02,   1.76043126e-01],
                         [9.74584714e-02,  -1.19253012e-01,   4.08675818e-01],
                         [-1.65769327e-02,  -2.71641034e-05,   5.45223728e-01]]))
-    print 'studentpdf Test PASSED'
+    print('studentpdf Test PASSED')
+
+if __name__ == '__main__':
+    test_studentpdf()

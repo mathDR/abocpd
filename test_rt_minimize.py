@@ -16,3 +16,7 @@ def test_rt_minimize():
     (x, fx, i) = rt_minimize(X, func, -100, theta1, theta2)
     assert allclose(x,theta1+theta2)
     assert allclose(fx[-1], 0.0)
+    print('TEST rt_minimize PASSED')
+
+if __name__ == '__main__': 
+   test_rt_minimize()

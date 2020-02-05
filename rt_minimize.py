@@ -208,7 +208,7 @@ def rt_minimize(X,f,length=-100,*args):
             ls_failed = 1  # this line search failed
 
     if verbose:
-        print '\n'
+        print('\n')
 
     return (X, fX, i)
 
